@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/slow-api/5000"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "endpoint": "/slow-api",
+      "delay_ms": 5000,
+      "response_time": "{{now}}",
+      "data": {
+        "departure_time": "2026-04-02T14:30:00Z",
+        "arrival_time": "2026-04-02T16:30:00Z",
+        "origin_station": "strasbourg",
+        "destination_state": "paris",
+        "price": 5000
+      }
+    },
+    "fixedDelayMilliseconds": 2000
+  }
+}
