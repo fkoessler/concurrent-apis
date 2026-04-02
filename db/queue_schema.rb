@@ -10,7 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 1) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_02_121616) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
+  create_table "search_results", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "data", default: {}, null: false
+    t.bigint "search_id"
+    t.datetime "updated_at", null: false
+    t.index ["data"], name: "index_search_results_on_data", using: :gin
+    t.index ["search_id"], name: "index_search_results_on_search_id"
+  end
+
+  create_table "searches", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "solid_queue_blocked_executions", force: :cascade do |t|
     t.string "concurrency_key", null: false
     t.datetime "created_at", null: false
