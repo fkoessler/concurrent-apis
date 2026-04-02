@@ -1,0 +1,2 @@
+web: SOLID_QUEUE_IN_PUMA=true bin/rails server
+css: bin/rails tailwindcss:watch
