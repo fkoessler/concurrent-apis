@@ -13,4 +13,5 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "searches#new"
+  resources :searches, only: %i[show new create]
 end
