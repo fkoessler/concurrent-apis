@@ -1,0 +1,11 @@
+<div id="<%= dom_id(result) %>" class="provider-result">
+  <h3><%= provider %></h3>
+  <ul>
+    <% results.each do |result| %>
+      <li>
+        <%= result.departure_time %> → <%= result.arrival_time %><br>
+        Price: <%= result.price %>€
+      </li>
+    <% end %>
+  </ul>
+</div>
