@@ -2,6 +2,7 @@ class CreateProviders < ActiveRecord::Migration[8.1]
   def change
     create_table :providers do |t|
       t.string :name, null: false, index: { unique: true }
+      t.string :code, null: false, index: { unique: true }
       t.timestamps
     end
 

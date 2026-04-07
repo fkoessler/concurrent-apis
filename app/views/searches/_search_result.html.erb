@@ -1,0 +1,14 @@
+<div id="<%= dom_id(search_result) %>" class="search-result mb-4 p-4 rounded-lg">
+  <h3 class="font-semibold text-lg mb-2"><%= search_result.provider.name %></h3>
+  <ul class="space-y-2 bg-gray-50 rounded p-2">
+    <% search_result.data.each do |key, value| %>
+      <li class="flex justify-between items-center">
+        <span>
+          <%= key %>
+          ->
+          <%= value %>
+        </span>
+      </li>
+    <% end %>
+  </ul>
+</div>

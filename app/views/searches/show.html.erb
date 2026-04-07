@@ -3,14 +3,16 @@
     Search Results: <%= @search.origin %> → <%= @search.destination %>
   </h1>
 
-  <%= turbo_stream_from @search, :results %>
+  <%= turbo_stream_from @search.to_gid, :results %>
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-      <% if @search.results.any? %>
-        <%= render partial: "searches/result", locals: { results: @search.results.flat_map(&:data), provider: @search.results.first.provider } %>
-      <% else %>
-        <div data-controller="loading" data-loading-results-container-value="results" data-loading-target="loader" class="flex justify-center items-center py-8">
+      <div id="search_results">
+        <%= render partial: "searches/search_result", collection: @search.results.order(created_at: :desc) %>
+      </div>
+
+      <% if @search.results.empty? %>
+        <div data-controller="loading" data-loading-results-container-value="search_results" data-loading-target="loader" class="flex justify-center items-center py-8">
           <div class="flex flex-col items-center gap-4">
             <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500" role="status">
               <span class="sr-only">Loading...</span>

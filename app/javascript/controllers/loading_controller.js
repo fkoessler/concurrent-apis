@@ -5,43 +5,26 @@ export default class extends Controller {
   static values = { resultsContainer: String }
 
   connect() {
-    this.setupResultsObserver()
-  }
+    const container = document.getElementById(this.resultsContainerValue)
+    if (!container) return
 
-  setupResultsObserver() {
-    const resultsContainer = document.getElementById(this.resultsContainerValue)
-    
-    if (!resultsContainer) {
-      console.warn("Results container not found:", this.resultsContainerValue)
-      return
-    }
-
-    const existingResults = resultsContainer.querySelectorAll('.provider-result')
-    if (existingResults.length > 0) {
+    if (container.querySelector(".search-result")) {
       this.hideLoader()
       return
     }
 
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.addedNodes.length > 0) {
-          const hasProviderResults = Array.from(mutation.addedNodes).some(node => {
-            return node.querySelectorAll('.provider-result').length > 0 ||
-                   (node.classList && node.classList.contains('provider-result'))
-          })
-          
-          if (hasProviderResults) {
-            this.hideLoader()
-            observer.disconnect()
-          }
-        }
-      })
+    this.observer = new MutationObserver(() => {
+      if (container.querySelector(".search-result")) {
+        this.hideLoader()
+        this.observer.disconnect()
+      }
     })
 
-    observer.observe(resultsContainer, {
-      childList: true,
-      subtree: true
-    })
+    this.observer.observe(container, { childList: true, subtree: true })
+  }
+
+  disconnect() {
+    this.observer?.disconnect()
   }
 
   hideLoader() {

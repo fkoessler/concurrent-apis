@@ -8,8 +8,8 @@
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
 Provider.create!([
-  { name: "SNCF" },
-  { name: "Deutsche Bahn" },
-  { name: "Renfe" },
-  { name: "Trenitalia" }
+  { name: "SNCF", code: "sncf" },
+  { name: "Deutsche Bahn", code: "db" },
+  { name: "Renfe", code: "renfe" },
+  { name: "Trenitalia", code: "trenitalia" }
 ])

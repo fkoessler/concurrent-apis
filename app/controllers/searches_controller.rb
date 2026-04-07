@@ -9,7 +9,7 @@ class SearchesController < ApplicationController
     Provider.find_each do |provider|
       FetchProviderTicketsJob.perform_later(
         search_id: @search.id,
-        carrier_id: provider.id,
+        provider_id: provider.id,
         origin: params[:search][:origin],
         destination: params[:search][:destination],
         date: params[:search][:date]

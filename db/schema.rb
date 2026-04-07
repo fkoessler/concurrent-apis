@@ -15,9 +15,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_125519) do
   enable_extension "pg_catalog.plpgsql"
 
   create_table "providers", force: :cascade do |t|
+    t.string "code", null: false
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_providers_on_code", unique: true
     t.index ["name"], name: "index_providers_on_name", unique: true
   end
 

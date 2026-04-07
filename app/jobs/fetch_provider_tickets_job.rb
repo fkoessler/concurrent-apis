@@ -5,22 +5,11 @@ class FetchProviderTicketsJob < ApplicationJob
     search = Search.find(search_id)
     provider = Provider.find(provider_id)
 
-    # Fetch data from provider API
-    results = ProviderAdapter.new(provider).fetch_connections(origin, destination, date)
+    results = ProviderAdapter.new(provider).fetch_tickets(origin, destination, date)
 
-    # Store results in the search
     search.results.create!(
-      provider: provider.name,
-      data: results,
-      status: "completed"
-    )
-
-    # Broadcast Turbo Stream update
-    Turbo::StreamsChannel.broadcast_append_to(
-      search,
-      target: "results",
-      partial: "searches/result",
-      locals: { results: results, provider: provider.name }
+      provider: provider,
+      data: results['data']
     )
   end
 end
