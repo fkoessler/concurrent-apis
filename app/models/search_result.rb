@@ -1,10 +1,4 @@
 class SearchResult < ApplicationRecord
-  include Turbo::Broadcastable
-
-  broadcasts_to ->(search_result) { [search_result.search, :results] },
-                inserts_by: :append,
-                partial: "searches/search_result"
-
   belongs_to :search,
              class_name: "Search",
              inverse_of: :results
@@ -14,4 +8,15 @@ class SearchResult < ApplicationRecord
   store :data, accessors: [ :departure_time, :arrival_time, :origin_station, :destination_station, :price ], coder: JSON
 
   validates :data, presence: true
+
+  after_commit :publish_search_result, on: :create
+
+  private
+
+  def publish_search_result
+    payload = { search_result_id: id, search_id: search_id }.to_json
+    ActiveRecord::Base.connection.execute(
+      ActiveRecord::Base.sanitize_sql(["SELECT pg_notify('new_search_result', ?)", payload])
+    )
+  end
 end

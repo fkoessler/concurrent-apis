@@ -3,7 +3,7 @@
     Search Results: <%= @search.origin %> → <%= @search.destination %>
   </h1>
 
-  <%= turbo_stream_from @search.to_gid, :results %>
+  <turbo-stream-source src="<%= stream_search_url(@search) %>"></turbo-stream-source>
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">

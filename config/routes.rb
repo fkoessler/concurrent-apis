@@ -13,5 +13,10 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "searches#new"
-  resources :searches, only: %i[show new create]
+  resources :searches, only: %i[new create] do
+    member do
+      get :show
+      get :stream
+    end
+  end
 end
