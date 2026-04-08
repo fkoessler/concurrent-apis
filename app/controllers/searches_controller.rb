@@ -32,39 +32,9 @@ class SearchesController < ApplicationController
     response.headers["X-Accel-Buffering"] = "no"
 
     sse = SSE.new(response.stream)
-    listener = PgNotifyListener.new("new_search_result")
-
-    # When the client disconnects, close the PG connection to unblock
-    # wait_for_notify immediately, freeing the Puma thread.
-    begin
-      listen_for_results(sse, listener)
-    rescue ActionController::Live::ClientDisconnected, IOError, PG::ConnectionBad
-      # Client navigated away or connection dropped — clean exit
-    ensure
-      listener.close
-      sse.close
-    end
-  end
-
-  private
-
-  def listen_for_results(sse, listener)
-    loop do
-      break if response.stream.closed?
-
-      listener.wait(1) do |_channel, _pid, raw_payload|
-        payload = JSON.parse(raw_payload, symbolize_names: true)
-        next unless payload[:search_id] == @search.id
-
-        search_result = SearchResult.find(payload[:search_result_id])
-        html = render_to_string(partial: "searches/search_result",
-                                locals: { search_result: },
-                                formats: [:html])
-        sse.write(turbo_stream.append("search_results", html))
-      end
-
-      break if response.stream.closed?
-    end
+    SearchResultStreamer.new(@search, sse, response.stream, view_context).stream
+  ensure
+    sse.close
   end
 
   def search_params
