@@ -29,46 +29,43 @@ class SearchesController < ApplicationController
     @search = Search.find(params[:id])
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Accel-Buffering"] = "no"
 
     sse = SSE.new(response.stream)
-    config = ActiveRecord::Base.connection_db_config.configuration_hash
-    pg_connection = PG.connect(
-      host:     config[:host],
-      port:     config[:port],
-      dbname:   config[:database],
-      user:     config[:username],
-      password: config[:password]
-    )
-    pg_connection.exec("LISTEN new_search_result")
+    listener = PgNotifyListener.new("new_search_result")
 
+    # When the client disconnects, close the PG connection to unblock
+    # wait_for_notify immediately, freeing the Puma thread.
     begin
-      loop do
-        pg_connection.wait_for_notify(5) do |_channel, _pid, raw_payload|
-          payload = JSON.parse(raw_payload, symbolize_names: true)
-          next unless payload[:search_id] == @search.id
-
-          search_result = SearchResult.find(payload[:search_result_id])
-          sse.write(
-            "<turbo-stream action=\"append\" target=\"search_results\">" \
-              "<template>" \
-              "#{render_to_string(partial: "searches/search_result", locals: { search_result: })}" \
-              "</template>" \
-              "</turbo-stream>"
-          )
-        end
-      end
+      listen_for_results(sse, listener)
     rescue ActionController::Live::ClientDisconnected, IOError, PG::ConnectionBad
       # Client navigated away or connection dropped — clean exit
     ensure
-      unless pg_connection.finished?
-        pg_connection.exec("UNLISTEN new_search_result")
-        pg_connection.close
-      end
+      listener.close
       sse.close
     end
   end
 
   private
+
+  def listen_for_results(sse, listener)
+    loop do
+      break if response.stream.closed?
+
+      listener.wait(1) do |_channel, _pid, raw_payload|
+        payload = JSON.parse(raw_payload, symbolize_names: true)
+        next unless payload[:search_id] == @search.id
+
+        search_result = SearchResult.find(payload[:search_result_id])
+        html = render_to_string(partial: "searches/search_result",
+                                locals: { search_result: },
+                                formats: [:html])
+        sse.write(turbo_stream.append("search_results", html))
+      end
+
+      break if response.stream.closed?
+    end
+  end
 
   def search_params
     params.require(:search).permit(:origin, :destination, :date)
